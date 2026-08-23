@@ -1,0 +1,441 @@
+{
+  "menu": [
+    {
+      "section": "BAR SNACKS",
+      "items": [
+        {
+          "name": "Makikihi fries",
+          "description": "with ketchup and aioli",
+          "price": "$7.50"
+        },
+        {
+          "name": "Polenta fries",
+          "description": "dusted with smoked paprika, aioli",
+          "price": "$9.00"
+        },
+        {
+          "name": "Seasoned potato wedges",
+          "description": "with sweet chilli and sour cream",
+          "price": "$9.50",
+          "options": [
+            {
+              "description": "add bacon and cheese",
+              "price": "$12.50"
+            }
+          ]
+        },
+        {
+          "name": "Spicy fried squid",
+          "description": "with soy and sesame aioli",
+          "price": "$15.00"
+        },
+        {
+          "name": "Grilled souvlaki bread",
+          "description": "with pesto and hummus",
+          "price": "$9.50"
+        },
+        {
+          "name": "Garlic ciabata bread",
+          "price": "$9.50"
+        },
+        {
+          "name": "Fried asian nibbles",
+          "description": "with soy, sweet chilli",
+          "price": "$15.00"
+        },
+        {
+          "name": "Beef and kidney bean nachos",
+          "description": "with sour cream and guacamole",
+          "price": "$19.00"
+        }
+      ]
+    },
+    {
+      "section": "LUNCH MENU",
+      "time": "11am - 2pm",
+      "items": [
+        {
+          "name": "Macs gold beer battered fish",
+          "description": "with fries, salad, tartar, malt vinegar",
+          "price": "$25.00",
+          "options": [
+            {
+              "description": "small",
+              "price": "$19.00"
+            }
+          ]
+        },
+        {
+          "name": "BreakFree beef burger",
+          "description": "with bacon, cheese, beetroot relish, salad, fries",
+          "price": "$23.00"
+        },
+        {
+          "name": "Warm thai pork and cashew salad",
+          "dietary": [
+            "gf"
+          ],
+          "description": "with lime, coriander and chilli dressing",
+          "price": "$22.00",
+          "options": [
+            {
+              "description": "small",
+              "price": "$15.50"
+            }
+          ]
+        },
+        {
+          "name": "Classic caesar salad",
+          "dietary": [
+            "gf"
+          ],
+          "description": "with crispy bacon, croutons, parmesan, poached egg, anchovy",
+          "price": "$20.00",
+          "options": [
+            {
+              "description": "add smoked chicken or smoked salmon",
+              "price": "$25.00"
+            }
+          ]
+        },
+        {
+          "name": "Smoked chicken panini",
+          "description": "with bacon, cranberry, brie with mixed leaf salad",
+          "price": "$16.00"
+        },
+        {
+          "name": "Super toastie",
+          "description": "wholemeal or white bread, ham, cheese, tomato with fries",
+          "price": "$14.00"
+        },
+        {
+          "name": "Roast pumpkin, kumara, quinoa and cherry tomato salad",
+          "dietary": [
+            "gf",
+            "v"
+          ],
+          "description": "with honey vinaigrette",
+          "price": "$20.00"
+        },
+        {
+          "name": "Eggs benedict on toasted ciabatta",
+          "description": "wilted spinach, hollandaise",
+          "price": "$16.00",
+          "options": [
+            {
+              "description": "add bacon or smoked salmon",
+              "price": "$19.50"
+            }
+          ]
+        },
+        {
+          "name": "Corn fritters",
+          "description": "with roast tomato, mushrooms, wilted spinach, aioli",
+          "price": "$18.00"
+        }
+      ]
+    },
+    {
+      "section": "DINNER MENU",
+      "time": "Available 5pm – 10pm",
+      "subsections": [
+        {
+          "subsection_name": "STARTERS",
+          "items": [
+            {
+              "name": "Garlic ciabatta bread",
+              "price": "$9.50"
+            },
+            {
+              "name": "Grilled souvlaki bread",
+              "description": "with pesto and hummus",
+              "price": "$9.50"
+            },
+            {
+              "name": "Makikihi fries",
+              "description": "with ketchup and aioli",
+              "price": "$7.50"
+            },
+            {
+              "name": "Seasoned potato wedges",
+              "description": "with sweet chilli and sour cream",
+              "price": "$9.50",
+              "options": [
+                {
+                  "description": "add cheese and bacon",
+                  "price": "$12.50"
+                }
+              ]
+            },
+            {
+              "name": "Today's soup",
+              "price": "$10.00",
+              "options": [
+                {
+                  "description": "add garlic bread",
+                  "price": "$12.00"
+                }
+              ]
+            },
+            {
+              "name": "Creamy seafood chowder",
+              "price": "$16.00",
+              "options": [
+                {
+                  "description": "add garlic bread",
+                  "price": "$18.00"
+                }
+              ]
+            },
+            {
+              "name": "Crispy cajun chicken",
+              "dietary": [
+                "gf"
+              ],
+              "description": "with mango relish, chipotle aioli",
+              "price": "$15.00"
+            },
+            {
+              "name": "Warm thai pork and cashew salad",
+              "dietary": [
+                "gf"
+              ],
+              "description": "with lime, coriander and chilli dressing",
+              "price": "$15.50"
+            },
+            {
+              "name": "Arancini",
+              "dietary": [
+                "gf"
+              ],
+              "description": "with mushroom, parmesan and herbs, smoky tomato dressing",
+              "price": "$14.00"
+            },
+            {
+              "name": "Garlic cream prawns",
+              "description": "with herbs, pita crisps",
+              "price": "$16.50"
+            }
+          ]
+        },
+        {
+          "subsection_name": "SALADS",
+          "items": [
+            {
+              "name": "Classic caesar salad",
+              "dietary": [
+                "gf"
+              ],
+              "description": "(w/no croutons) crispy bacon, croutons, parmesan, poached egg, anchovy",
+              "price": "$20.00",
+              "options": [
+                {
+                  "description": "add crispy cajun chicken or smoked salmon",
+                  "price": "$25.00"
+                }
+              ]
+            },
+            {
+              "name": "Greek salad",
+              "dietary": [
+                "gf"
+              ],
+              "description": "greens, tomato, cucumber, feta, olives, balsamic dressing",
+              "price": "$20.00",
+              "options": [
+                {
+                  "description": "add crispy cajun chicken or smoked salmon",
+                  "price": "$25.00"
+                }
+              ]
+            },
+            {
+              "name": "Roast pumpkin salad",
+              "dietary": [
+                "gf",
+                "v"
+              ],
+              "description": "with asparagus, quinoa, cherry tomato, honey vinaigrette",
+              "price": "$20.00"
+            }
+          ]
+        },
+        {
+          "subsection_name": "MAINS",
+          "items": [
+            {
+              "name": "Twice roasted pork belly",
+              "dietary": [
+                "gf"
+              ],
+              "description": "with agria mash, red cabbage confit, bacon wrapped beans, crackling sticks, red currant jus",
+              "price": "$30.00"
+            },
+            {
+              "name": "Cashew crusted chicken breast",
+              "dietary": [
+                "gf"
+              ],
+              "description": "with kumara fries, salad and aioli",
+              "price": "$29.00"
+            },
+            {
+              "name": "Slow cooked lamb shank",
+              "dietary": [
+                "gf"
+              ],
+              "description": "with crispy sea salt potatoes, green pea puree, onion jam, mint vinegar, rosemary jus",
+              "price": "$30.00"
+            },
+            {
+              "name": "Today's fish of the day",
+              "dietary": [
+                "gf"
+              ],
+              "description": "with chive mash, wilted spinach, asparagus and hollandaise sauce",
+              "price": "$30.00"
+            },
+            {
+              "name": "Macs gold beer battered fish",
+              "description": "with makikihi fries, salad, tartar, malt vinegar",
+              "price": "$25.00"
+            },
+            {
+              "name": "BreakFree burger",
+              "description": "beef pattie, bacon, swiss cheese, beetroot relish, fries, salad and aioli",
+              "price": "$23.00"
+            },
+            {
+              "name": "Falafel burger",
+              "description": "with cheese, onion jam, roast capsicum, fries, salad and aioli",
+              "price": "$21.00"
+            },
+            {
+              "name": "Gourmet pizza",
+              "price": "$23.00",
+              "options": [
+                {
+                  "description": "Smoked chicken, bacon, cranberry and brie"
+                },
+                {
+                  "description": "Roast pumpkin, kumara, red pepper, onion jam, pesto, mozzarella"
+                }
+              ]
+            },
+            {
+              "name": "Pasta of the day",
+              "price": "$22.00"
+            },
+            {
+              "name": "Thai chicken curry",
+              "description": "with fragrant rice, asian salad",
+              "price": "$24.00"
+            },
+            {
+              "name": "From the grill",
+              "description": "includes 2 sides and 1 sauce",
+              "dietary": [
+                "gf"
+              ],
+              "items": [
+                {
+                  "name": "300g prime sirloin",
+                  "price": "$36.00"
+                },
+                {
+                  "name": "200g rib eye",
+                  "price": "$32.00"
+                }
+              ],
+              "sides_options": "fries, mash, steamed vegetables, garden salad (choose 2)",
+              "sauce_options": "red wine jus, mushroom sauce, peppercorn sauce, garlic butter (choose 1)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "section": "SIDES",
+      "items": [
+        {
+          "name": "Steamed vegetables",
+          "price": "$5.00"
+        },
+        {
+          "name": "Garden salad",
+          "price": "$5.00"
+        },
+        {
+          "name": "Roast mushrooms",
+          "price": "$5.00"
+        },
+        {
+          "name": "Mash",
+          "price": "$5.00"
+        },
+        {
+          "name": "Fries",
+          "price": "$5.00"
+        },
+        {
+          "name": "2 x eggs",
+          "price": "$4.00"
+        },
+        {
+          "name": "Extra sauce",
+          "price": "$2.00"
+        }
+      ]
+    },
+    {
+      "section": "TO FINISH",
+      "items": [
+        {
+          "name": "Warm pear and ginger pudding",
+          "description": "with caramel, anglaise, candied walnuts, whipped cream, vanilla bean ice cream",
+          "price": "$12.00"
+        },
+        {
+          "name": "Ice cream sundae",
+          "dietary": [
+            "gf"
+          ],
+          "description": "choice of toppings, marshmallows, cream, chocolate shards",
+          "price": "$9.50"
+        },
+        {
+          "name": "White chocolate crème brulee",
+          "dietary": [
+            "gf"
+          ],
+          "description": "with marinated strawberries, vanilla bean ice cream",
+          "price": "$12.50"
+        },
+        {
+          "name": "Pavlova roulade",
+          "description": "with fruit salad, passionfruit, ice cream",
+          "price": "$11.50"
+        },
+        {
+          "name": "Flourless chocolate torte",
+          "description": "with berry compote, marscapone, vanilla bean ice cream",
+          "price": "$12.00"
+        },
+        {
+          "name": "Cheese plate",
+          "dietary": [
+            "gf"
+          ],
+          "description": "aged cheddar, brie, blue cheese, crackers and relish",
+          "price": "$15.00"
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "ALL PRICES INCLUDE 15% GST",
+    "PLEASE NOTE THERE IS A 2% SURCHARGE FOR ALL CREDIT CARD PAYMENTS",
+    "PLEASE NOTE THERE IS A 15% SURCHARGE ON PUBLIC HOLIDAYS",
+    "A $5 ROOM SERVICE DELIVERY CHARGE APPLIES"
+  ]
+}

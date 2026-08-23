@@ -1,0 +1,9 @@
+=== CYGEN FRONT DESK BOOKING ===
+Time Received: 5:18:18 PM
+
+Name: Walk-in / Not Provided
+Party Size: 1
+Date: Today
+Time: ASAP
+
+================================
