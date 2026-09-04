@@ -1,7 +1,6 @@
 require('dotenv').config({ path: './api.env' });
 const { Pool } = require('pg');
 const fs = require('fs');
-console.log("My DB URL is:", process.env.DATABASE_URL);
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,

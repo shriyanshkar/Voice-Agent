@@ -1,4 +1,5 @@
 // We don't need 'fs' anymore!
+require('dotenv').config({ path: './api.env' });
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { Pool } = require('pg');
 const fs = require('fs');
@@ -27,44 +28,97 @@ async function writeKitchenDocket(orderDetails) {
     itemsToPrint = orderDetails.items; 
   }
 
-  // Loop through items and print modifications underneath
-  itemsToPrint.forEach(item => {
-    content += `[ ${item.quantity || 1}x ] - ${item.name || 'Unknown Item'}\n`;
+  // Loop through items and update safely
+  for (const item of itemsToPrint) {
+    const qty = item.quantity || 1;
+    const itemName = item.name || 'Unknown Item';
     
-    // If modifications exist, loop through them and indent them
+    if (itemName !== 'Unknown Item') {
+      // THE GUARDRAIL: Only update if current stock is greater than or equal to requested quantity
+      const updateQuery = 'UPDATE menu_items SET stock = stock - $1 WHERE name = $2 AND stock >= $1 RETURNING *';
+      const result = await pool.query(updateQuery, [qty, itemName]);
+      
+      // If rowCount is 0, the database rejected the update (stock was too low)
+      if (result.rowCount === 0) {
+        console.log(`❌ OUT OF STOCK GUARD: Prevented negative stock for ${itemName}`);
+        content += `[ ❌ REJECTED ] - ${qty}x ${itemName} (INSUFFICIENT STOCK)\n`;
+        continue; // Skip the rest of the loop so it doesn't print the normal ticket line
+      }
+      
+      console.log(`📉 Stock decremented for ${itemName} by ${qty}`);
+    }
+
+    // Only prints if the database update was successful
+    content += `[ ${qty}x ] - ${itemName}\n`;
+    
     if (item.modifications && item.modifications.length > 0) {
       item.modifications.forEach(mod => {
-        content += `      -> ${mod.toUpperCase()}\n`; // Caps lock for the kitchen!
+        content += `      -> ${mod.toUpperCase()}\n`;
       });
     }
-  });
+  }
   
   content += "\n============================\n";
   fs.writeFileSync(filepath, content);
   console.log(`✅ [Printer] Kitchen docket printed to: dockets/${filename}`);
 }
+  // ------------------------------------------------
+  
 
 async function writeBookingDocket(bookingDetails) {
   const docketsDir = path.join(__dirname, 'dockets');
   if (!fs.existsSync(docketsDir)) fs.mkdirSync(docketsDir);
   
-  const filename = `front_desk_${Date.now()}.txt`;
-  const filepath = path.join(docketsDir, filename);
-  
-  let content = "=== CYGEN FRONT DESK BOOKING ===\n";
-  content += `Time Received: ${new Date().toLocaleTimeString()}\n\n`;
-  
-  // Bulletproof fallback logic
+  const timestamp = Date.now();
   const details = bookingDetails || {};
   
-  content += `Name: ${details.name || 'Walk-in / Not Provided'}\n`;
-  content += `Party Size: ${details.party_size || 1}\n`;
-  content += `Date: ${details.date || 'Today'}\n`;
-  content += `Time: ${details.time || 'ASAP'}\n`;
-  
-  content += "\n================================\n";
-  fs.writeFileSync(filepath, content);
-  console.log(`✅ [Printer] Booking docket printed to: dockets/${filename}`);
+  // Make sure we actually have a date and time to check
+  if (!details.date || !details.time) {
+    console.log("❌ Missing date or time for booking.");
+    return;
+  }
+
+  // 1. Check capacity for this exact time slot
+  // We are assuming a maximum capacity of 10 tables per time slot
+  const MAX_TABLES = 10; 
+  const checkQuery = `SELECT COUNT(*) FROM reservations WHERE reservation_date = $1 AND reservation_time = $2`;
+  const result = await pool.query(checkQuery, [details.date, details.time]);
+  const currentBookings = parseInt(result.rows[0].count);
+
+  let content = "=== CYGEN FRONT DESK ===\n";
+  content += `Time Received: ${new Date().toLocaleTimeString()}\n\n`;
+
+  if (currentBookings >= MAX_TABLES) {
+    // 2A. REJECT THE BOOKING (CAPACITY REACHED)
+    const filename = `REJECTED_booking_${timestamp}.txt`;
+    
+    content += `STATUS: ❌ REJECTED (FULLY BOOKED)\n`;
+    content += `Requested Time: ${details.date} @ ${details.time}\n`;
+    content += `Name: ${details.name || 'Walk-in'}\n`;
+    content += `Party Size: ${details.party_size || 1}\n\n`;
+    content += `Action Required: Please inform the customer we are at full capacity (${currentBookings}/${MAX_TABLES} tables booked) for this time slot.\n`;
+    
+    fs.writeFileSync(path.join(docketsDir, filename), content);
+    console.log(`❌ [Printer] Rejected booking docket printed: dockets/${filename}`);
+
+  } else {
+    // 2B. ACCEPT THE BOOKING (CAPACITY AVAILABLE)
+    const filename = `CONFIRMED_booking_${timestamp}.txt`;
+    
+    // Save to Postgres
+    const insertQuery = `INSERT INTO reservations (customer_name, party_size, reservation_date, reservation_time) VALUES ($1, $2, $3, $4)`;
+    await pool.query(insertQuery, [details.name, details.party_size, details.date, details.time]);
+    
+    content += `STATUS: ✅ CONFIRMED\n`;
+    content += `Name: ${details.name || 'Walk-in'}\n`;
+    content += `Party Size: ${details.party_size || 1}\n`;
+    content += `Date: ${details.date}\n`;
+    content += `Time: ${details.time}\n\n`;
+    content += `Database Status: Saved to Neon. (${currentBookings + 1}/${MAX_TABLES} tables booked for this slot).\n`;
+    
+    fs.writeFileSync(path.join(docketsDir, filename), content);
+    console.log(`✅ [Printer] Confirmed booking docket printed: dockets/${filename}`);
+  }
 }
 
 // 2. Initialize Gemini
@@ -76,26 +130,34 @@ async function parseOrderTranscript(transcript) {
     console.log("[Parser] Fetching live menu from Neon Postgres...");
     
     // 3. Fetch the LIVE menu from the database
-    const dbResponse = await pool.query('SELECT category, name, price, description FROM menu_items');
+    const dbResponse = await pool.query('SELECT category, name, price, description, stock FROM menu_items');
     const liveMenu = dbResponse.rows; 
-    
     // 4. Setup the Gemini Model
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    
+  
+    // Grab the exact date right now (e.g., "2026-08-06")
+    const todayStr = new Date().toISOString().split('T')[0];
+
     // 5. Construct the strict prompt
+  
+    // 2. Update the prompt to include the stock check rule
     const prompt = `
       You are an automated restaurant parsing engine for Cygen. 
       
-      Here is the LIVE DATABASE MENU: 
+      Here is the LIVE DATABASE MENU WITH CURRENT STOCK LEVELS: 
       ${JSON.stringify(liveMenu)}
       
       Analyze this transcript: "${transcript}"
       
       RULES:
       1. Determine the user's intent: "food_order", "table_booking", or "invalid".
-      2. IF FOOD ORDER: Cross-reference their requested items with the "name" fields in the LIVE DATABASE MENU. Allow for fuzzy matching. If they order an item NOT in the database, set intent to "invalid" and explain the item is unavailable.
-      3. IF TABLE BOOKING: Extract the customer's name, party size, date, and time from the transcript. If a specific detail is not mentioned, set that field to null.
-      4. IF MODIFICATIONS: If the user asks for changes to an item (e.g., "extra onions", "no mayo", "allergy to nuts"), add them as strings to the "modifications" array for that specific item.
+      2. IF FOOD ORDER: Cross-reference their requested items with the "name" fields in the LIVE MENU. 
+         -> STOCK CHECK: You must check the requested quantity against the available "stock" for that item. 
+         -> If the user asks for an item with 0 stock, or asks for more than the available stock, you MUST set the intent to "invalid" and write an error_message saying "Item not in stock" or "Not enough stock available."
+      3. IF TABLE BOOKING: Extract the customer's name, party size, date, and time. 
+         -> CRITICAL CONTEXT: Today's date is ${todayStr}. If the user does not explicitly state a date, you MUST default the "date" field to "${todayStr}".
+         -> TIME FORMAT: The "time" field MUST be strictly formatted in 24-hour time (e.g., "19:00:00"). Never include "a.m." or "p.m.".
+      4. IF MODIFICATIONS: Add them as strings to the "modifications" array for that specific item.
       
       You must reply ONLY with a valid JSON object matching this exact schema:
       {
@@ -105,7 +167,7 @@ async function parseOrderTranscript(transcript) {
             { 
               "name": "Exact_Menu_Item_Name", 
               "quantity": 1,
-              "modifications": ["extra onions", "no tomato"] 
+              "modifications": [] 
             } 
           ]
         } | null,

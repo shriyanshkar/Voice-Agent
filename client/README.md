@@ -1,22 +1,16 @@
-# AI Voice-to-Database POS Engine
+# React + Vite
 
-A full-stack, voice-activated Point of Sale (POS) prototype designed to parse continuous unstructured audio into strict JSON schemas, enforcing deterministic business logic through a relational database. 
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-This project bridges the gap between unpredictable LLM outputs and strict backend requirements, serving as a conceptual blueprint for enterprise-scale restaurant architecture.
+Currently, two official plugins are available:
 
-## 🚀 Technical Architecture
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-*   **Client-Side Edge Computing:** Utilizes the browser's native Web Speech API in React to handle continuous voice recognition locally. This prevents expensive, constant audio streaming to the backend and triggers server execution only upon specific wake-word detection.
-*   **Asynchronous Orchestrator:** A Node.js/Express backend that receives text streams, interfaces with a live database to assemble context, and securely communicates with the Gemini LLM API.
-*   **Atomic Database Guardrails:** Integrated with Neon PostgreSQL to manage transactional state. To counter LLM math hallucinations, the backend executes atomic SQL constraints (`UPDATE ... AND stock >= $1`) to guarantee negative inventory is physically impossible.
-*   **Enterprise Scaling (RAG Ready):** The architecture is designed to support a Retrieval-Augmented Generation (RAG) pipeline. System blueprints (`/docs`) outline how semantic vector search can be utilized alongside stateful SQL transactions to support a 1M+ item database.
+## React Compiler
 
-## 🛠️ Tech Stack
-*   **Frontend:** React, Web Speech API
-*   **Backend:** Node.js, Express.js
-*   **Database:** PostgreSQL (Neon)
-*   **AI Integration:** Gemini API (Strict JSON mode)
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## 💡 Key Engineering Challenges Solved
-1.  **Separation of Concerns:** Delegated semantic language understanding to the LLM while keeping strict mathematical state (inventory/capacity) locked in PostgreSQL.
-2.  **Data Normalization:** Engineered the parser to automatically inject live system timestamps for missing dates and enforce strict 24-hour SQL time constraints from natural language inputs (e.g., "7 p.m." -> "19:00:00").
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.

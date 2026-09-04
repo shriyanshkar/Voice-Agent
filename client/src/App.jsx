@@ -1,32 +1,92 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 
 export default function VoiceAgent() {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [serverMessage, setServerMessage] = useState('');
+  const [isSending, setIsSending] = useState(false);
   
-  // useRef keeps the recognition instance alive across renders
   const recognitionRef = useRef(null);
+  const hasSubmittedRef = useRef(false);
+  const pendingTranscriptRef = useRef('');
+
+  // 1. Separate the actual fetch logic so it accepts a direct string
+  const processOrderToBackend = useCallback(async (orderText) => {
+    const trimmedOrderText = orderText.trim();
+    if (!trimmedOrderText || isSending) return;
+    if (pendingTranscriptRef.current === trimmedOrderText) return;
+    
+    pendingTranscriptRef.current = trimmedOrderText;
+    setIsSending(true);
+    setServerMessage("Sending to kitchen...");
+    
+    try {
+      const response = await fetch('http://localhost:3000/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transcript: trimmedOrderText }), // Send the exact text
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        setServerMessage(data.duplicate ? "Already sent to kitchen." : "✅ Docket printed successfully!");
+      } else {
+        setServerMessage("❌ Failed to process order.");
+      }
+    } catch {
+      setServerMessage("❌ Server error. Is the backend running?");
+      pendingTranscriptRef.current = '';
+      hasSubmittedRef.current = false;
+    } finally {
+      setIsSending(false);
+    }
+  }, [isSending]);
+
+  // We use a ref to hold the latest version of the function to avoid React stale closures
+  const processOrderRef = useRef(processOrderToBackend);
+  useEffect(() => {
+    processOrderRef.current = processOrderToBackend;
+  }, [processOrderToBackend]);
 
   useEffect(() => {
-    // Check for browser support (Chrome/Edge use webkit prefix)
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    
+
     if (!SpeechRecognition) {
-      setServerMessage("Your browser doesn't support the Web Speech API. Try Chrome.");
       return;
     }
 
     const recognition = new SpeechRecognition();
-    recognition.continuous = true; // Keep listening until explicitly stopped
-    recognition.interimResults = true; // Show words as they are spoken
+    recognition.continuous = true; 
+    recognition.interimResults = true; 
 
     recognition.onresult = (event) => {
       let currentTranscript = '';
       for (let i = 0; i < event.results.length; i++) {
         currentTranscript += event.results[i][0].transcript;
       }
-      setTranscript(currentTranscript);
+      
+      const lowerCaseTranscript = currentTranscript.toLowerCase();
+
+      // 2. THE TRIGGER LOGIC
+      if (lowerCaseTranscript.includes("send order") && !hasSubmittedRef.current) {
+        hasSubmittedRef.current = true;
+        console.log("🎯 Trigger word detected!");
+        
+        // Stop the microphone automatically
+        recognition.stop();
+        
+        // Strip out the trigger word so the AI doesn't get confused
+        const finalOrderText = lowerCaseTranscript.replace("send order", "").trim();
+        
+        // Update the UI one last time
+        setTranscript(finalOrderText);
+        
+        // Fire it to the backend immediately
+        processOrderRef.current(finalOrderText);
+      } else {
+        // If no trigger word, just update the screen normally
+        setTranscript(currentTranscript);
+      }
     };
 
     recognition.onerror = (event) => {
@@ -39,41 +99,37 @@ export default function VoiceAgent() {
     };
 
     recognitionRef.current = recognition;
+
+    return () => {
+      recognition.stop();
+      recognitionRef.current = null;
+    };
   }, []);
 
   const toggleListening = () => {
     if (isListening) {
       recognitionRef.current.stop();
     } else {
-      setTranscript(''); // Clear old order
+      if (!recognitionRef.current) {
+        setServerMessage("Your browser doesn't support the Web Speech API. Try Chrome.");
+        return;
+      }
+
+      setTranscript(''); 
       setServerMessage('');
+      hasSubmittedRef.current = false;
+      pendingTranscriptRef.current = '';
       recognitionRef.current.start();
       setIsListening(true);
     }
   };
 
-  const sendOrder = async () => {
-    if (!transcript) return;
-    
-    setServerMessage("Sending to kitchen...");
-    
-    try {
-      const response = await fetch('http://localhost:3000/order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transcript }),
-      });
-      
-      const data = await response.json();
-      if (data.success) {
-        setServerMessage("✅ Docket printed successfully!");
-        setTranscript(''); // Reset for the next customer
-      } else {
-        setServerMessage("❌ Failed to process order.");
-      }
-    } catch (error) {
-      setServerMessage("❌ Server error. Is the backend running?");
-    }
+  // Fallback for manual clicking just in case the kitchen is too loud
+  const handleManualSend = () => {
+    if (isSending) return;
+    recognitionRef.current.stop();
+    hasSubmittedRef.current = true;
+    processOrderToBackend(transcript);
   };
 
   return (
@@ -94,7 +150,7 @@ export default function VoiceAgent() {
           marginBottom: '20px'
         }}
       >
-        {isListening ? '🛑 Stop Recording' : '🎤 Start Recording'}
+        {isListening ? '🛑 Stop Recording (Listening for "Send Order")' : '🎤 Start Recording'}
       </button>
 
       <div style={{ 
@@ -103,26 +159,27 @@ export default function VoiceAgent() {
         border: '1px solid #ccc', 
         borderRadius: '8px',
         marginBottom: '20px',
-        backgroundColor: '#f9f9f9'
+        backgroundColor: '#f9f9f9',
+        fontStyle: isListening ? 'italic' : 'normal'
       }}>
         {transcript || "Press start and say an order..."}
       </div>
 
       <button 
-        onClick={sendOrder} 
-        disabled={!transcript || isListening}
+        onClick={handleManualSend} 
+        disabled={!transcript.trim() || isListening || isSending}
         style={{
           padding: '15px 20px',
-          backgroundColor: (!transcript || isListening) ? '#ccc' : '#008CBA',
+          backgroundColor: (!transcript.trim() || isListening || isSending) ? '#ccc' : '#008CBA',
           color: 'white',
           border: 'none',
           borderRadius: '8px',
-          cursor: (!transcript || isListening) ? 'not-allowed' : 'pointer',
+          cursor: (!transcript.trim() || isListening || isSending) ? 'not-allowed' : 'pointer',
           width: '100%',
           fontSize: '16px'
         }}
       >
-        Send to Kitchen
+        {isSending ? 'Sending...' : 'Manual Send (Override)'}
       </button>
 
       {serverMessage && (
